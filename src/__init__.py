@@ -1,0 +1,3 @@
+"""
+DepoIndex – src package init.
+"""
