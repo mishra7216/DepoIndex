@@ -282,19 +282,21 @@ with st.sidebar:
     )
 
     st.markdown('<div class="section-heading">🔑 API Configuration</div>', unsafe_allow_html=True)
+    default_key = os.environ.get("OPENAI_API_KEY", "")
     api_key = st.text_input(
         "OpenAI API Key",
+        value=default_key,
         type="password",
         placeholder="sk-...",
-        help="Your OpenAI API key. Not stored anywhere.",
+        help="Your OpenAI API key. Leave empty to use Offline Demo / Heuristic Mode.",
         key="api_key_input",
     )
 
     model_choice = st.selectbox(
         "Model",
-        ["gpt-4o-mini", "gpt-4o", "gpt-4-turbo"],
-        index=0,
-        help="gpt-4o-mini is recommended for speed and cost.",
+        ["gpt-4o-mini", "gpt-4o", "gpt-4-turbo", "Offline Demo (Heuristic Classifier)"],
+        index=0 if default_key else 3,
+        help="Use gpt-4o-mini for live AI indexing, or Offline Demo for testing without an API key.",
     )
 
     st.markdown('<div class="section-heading">⚙️ Processing Options</div>', unsafe_allow_html=True)
@@ -352,6 +354,17 @@ with tab_upload:
 
     with col_l:
         st.markdown('<div class="section-heading">📂 Upload Deposition PDF</div>', unsafe_allow_html=True)
+        sample_pdf_path = Path("sample_data/sample_deposition.pdf")
+        if "use_sample" not in st.session_state:
+            st.session_state["use_sample"] = False
+
+        c_up1, c_up2 = st.columns([3, 2])
+        with c_up2:
+            if sample_pdf_path.exists():
+                if st.button("📑 Load Sample Deposition PDF", use_container_width=True):
+                    st.session_state["use_sample"] = True
+                    st.rerun()
+
         uploaded_file = st.file_uploader(
             "Drop a deposition PDF here or click to browse",
             type=["pdf"],
@@ -359,30 +372,43 @@ with tab_upload:
             key="pdf_uploader",
         )
 
+        # Handle sample PDF if user clicked load sample
+        file_bytes = None
+        file_name = None
         if uploaded_file:
-            st.success(f"✅ **{uploaded_file.name}** uploaded — {uploaded_file.size / 1024:.1f} KB")
+            file_bytes = uploaded_file.getvalue()
+            file_name = uploaded_file.name
+            st.session_state["use_sample"] = False
+        elif st.session_state.get("use_sample") and sample_pdf_path.exists():
+            file_bytes = sample_pdf_path.read_bytes()
+            file_name = "sample_deposition.pdf"
+            st.info("📑 Using loaded **sample_deposition.pdf** (15-page deposition with continuations & returns)")
 
+        if file_bytes and file_name:
+            st.success(f"✅ **{file_name}** ready — {len(file_bytes) / 1024:.1f} KB")
+
+            is_offline_mode = (not api_key) or ("Offline Demo" in model_choice)
+            btn_label = "🚀 Run DepoIndex Pipeline (Offline Demo)" if is_offline_mode else "🚀 Run DepoIndex Pipeline (OpenAI)"
             run_btn = st.button(
-                "🚀 Run DepoIndex Pipeline",
-                disabled=not api_key,
+                btn_label,
                 use_container_width=True,
                 key="run_btn",
             )
 
-            if not api_key:
-                st.warning("⚠️ Please enter your OpenAI API key in the sidebar to proceed.")
+            if is_offline_mode:
+                st.caption("ℹ️ Running in **Offline Demo Mode** (no API key required). To use OpenAI models, enter your API key in the sidebar.")
 
-            if run_btn and api_key:
+            if run_btn:
                 st.session_state["processing"] = True
                 report = None
                 error_msg = None
 
                 with st.status("Running DepoIndex pipeline…", expanded=True) as status:
                     try:
-                        # 1. Save uploaded file temporarily
+                        # 1. Save file temporarily
                         st.write("📄 Reading PDF…")
                         tmp_path = Path("/tmp/depoindex_upload.pdf")
-                        tmp_path.write_bytes(uploaded_file.getvalue())
+                        tmp_path.write_bytes(file_bytes)
 
                         # 2. Extract pages
                         st.write("🔍 Extracting transcript text…")
@@ -427,7 +453,7 @@ with tab_upload:
 
                         # 5. Build index
                         st.write("🔗 Building topic index…")
-                        report = build_index(raw_records, pages, uploaded_file.name)
+                        report = build_index(raw_records, pages, file_name)
                         st.write(f"   → {len(report.entries)} distinct topics identified")
 
                         # 6. Validate provenance

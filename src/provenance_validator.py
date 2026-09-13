@@ -69,28 +69,36 @@ def validate_record(
     return record
 
 
-def validate_report(report: IndexReport) -> IndexReport:
+def validate_report(
+    report: IndexReport,
+    pages: Optional[List[TranscriptPage]] = None,
+) -> IndexReport:
     """
     Validate all entries in an IndexReport.
 
-    Collects the set of valid transcript page numbers from the report metadata
-    and validates each entry.
+    Collects the set of valid transcript page numbers from the provided pages
+    or from the report entries, and validates each entry.
 
     Parameters
     ----------
     report : IndexReport to validate (mutated in place)
+    pages  : optional list of TranscriptPage objects from the PDF
 
     Returns
     -------
     The same IndexReport with validation flags applied.
     """
-    # Collect valid page numbers from all entries
     all_pages: Set[int] = set()
-    for entry in report.entries:
-        if entry.start_page is not None:
-            all_pages.add(entry.start_page)
-        if entry.end_page is not None:
-            all_pages.add(entry.end_page)
+    if pages:
+        for p in pages:
+            tp = p.transcript_page or (p.pdf_page + 1)
+            all_pages.add(tp)
+    else:
+        for entry in report.entries:
+            if entry.start_page is not None:
+                all_pages.add(entry.start_page)
+            if entry.end_page is not None:
+                all_pages.add(entry.end_page)
 
     for entry in report.entries:
         validate_record(entry, all_pages)
