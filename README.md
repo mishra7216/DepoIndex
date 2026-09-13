@@ -1,16 +1,20 @@
 # DepoIndex ⚖️
 **AI-Powered Deposition Topic Index**
 
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://depoindex-hsryuvqghk9sdxzukpaai8.streamlit.app/)
 [![Tests](https://img.shields.io/badge/pytest-45%20passed-brightgreen.svg)](tests/)
 [![Python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue.svg)](requirements.txt)
-[![Framework](https://img.shields.io/badge/frontend-Streamlit-FF4B4B.svg)](app.py)
 [![GitHub](https://img.shields.io/badge/GitHub-mishra7216%2FDepoIndex-black.svg)](https://github.com/mishra7216/DepoIndex)
+
+> 🚀 **Live Deployed Application:** **[https://depoindex-hsryuvqghk9sdxzukpaai8.streamlit.app/](https://depoindex-hsryuvqghk9sdxzukpaai8.streamlit.app/)**  
+> *Test the live application in your browser right now — click "Load Sample Deposition PDF" and run instant indexing without requiring any local installation or API key.*
 
 DepoIndex is an AI-powered legal technology system that automatically analyzes legal deposition transcripts and constructs a structured, searchable, and verifiable topic index with exact page and line references.
 
 ---
 
 ## 📑 Table of Contents
+- [Live Demo](#-live-demo)
 - [Key Features](#-key-features)
 - [System Requirements](#-system-requirements)
 - [Quick Start & Execution](#-quick-start--execution)
@@ -20,6 +24,18 @@ DepoIndex is an AI-powered legal technology system that automatically analyzes l
 - [Technical Documentation & Reports](#-technical-documentation--reports)
 - [Sample Output](#-sample-output)
 - [Limitations & Future Enhancements](#-limitations--future-enhancements)
+
+---
+
+## 🌐 Live Demo
+
+The application is deployed on Streamlit Community Cloud and available at:
+👉 **[https://depoindex-hsryuvqghk9sdxzukpaai8.streamlit.app/](https://depoindex-hsryuvqghk9sdxzukpaai8.streamlit.app/)**
+
+1. Open the URL in any browser.
+2. Click **"📑 Load Sample Deposition PDF"** to load the pre-configured 15-page legal transcript.
+3. Click **"🚀 Run DepoIndex Pipeline (Offline Demo)"** to index topics in seconds.
+4. Or optionally enter your OpenAI API key in the sidebar for live GPT-4o-mini topic analysis.
 
 ---
 
